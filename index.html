@@ -12,11 +12,11 @@
     <h1>순간포착</h1>
     <p>사진동아리 신입 부원 모집</p>
 
-    <!-- D-day 표시 자리 (2단계에서 계산 기능 연결) -->
-    <p id="dday">마감일: 2026년 11월 28일(토) 23:59</p>
+    <!-- D-day 표시 (아래 script가 계산해서 채움) -->
+    <p><strong id="dday">D-?</strong> · 마감일: 2026년 11월 28일(토) 23:59</p>
 
-    <!-- 지원하기 버튼 자리 (구글폼 주소는 2단계에서 한 곳에 정의) -->
-    <a id="apply-top" href="#">지원하기</a>
+    <!-- 지원하기 버튼 (구글폼 주소는 아래 script의 FORM_URL에서 한 번만 설정) -->
+    <a id="apply-top" class="apply-btn" href="#" target="_blank" rel="noopener">지원하기</a>
   </header>
 
   <main>
@@ -63,9 +63,47 @@
     <section id="apply-bottom-section">
       <h2>지금 지원하세요</h2>
       <p>마감: 2026년 11월 28일(토) 23:59</p>
-      <a id="apply-bottom" href="#">지원하기</a>
+      <a id="apply-bottom" class="apply-btn" href="#" target="_blank" rel="noopener">지원하기</a>
     </section>
   </main>
+
+  <script>
+    // ===== 회장이 바꿀 설정 (여기만 수정) =====
+    var FORM_URL = "https://forms.gle/REPLACE_ME"; // 구글폼 주소로 교체
+    var DEADLINE = new Date(2026, 10, 28, 23, 59, 0); // 2026-11-28 23:59 (월은 0부터 시작)
+    // ========================================
+
+    // 지금 시각 기준 상태 계산: { closed, label }
+    function getState(now) {
+      if (now.getTime() > DEADLINE.getTime() + 59999) {
+        return { closed: true, label: "모집 마감" };
+      }
+      var DAY = 24 * 60 * 60 * 1000;
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var dueDay = new Date(DEADLINE.getFullYear(), DEADLINE.getMonth(), DEADLINE.getDate());
+      var days = Math.round((dueDay - today) / DAY);
+      return { closed: false, label: days === 0 ? "D-Day" : "D-" + days };
+    }
+
+    function render() {
+      var state = getState(new Date());
+      document.getElementById("dday").textContent = state.label;
+
+      var buttons = document.querySelectorAll(".apply-btn");
+      for (var i = 0; i < buttons.length; i++) {
+        var btn = buttons[i];
+        if (state.closed) {
+          btn.removeAttribute("href");
+          btn.setAttribute("aria-disabled", "true");
+          btn.textContent = "모집이 마감되었습니다";
+        } else {
+          btn.setAttribute("href", FORM_URL);
+        }
+      }
+    }
+
+    render();
+  </script>
 
 </body>
 </html>
